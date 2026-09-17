@@ -24,9 +24,12 @@ fi
     -o "$APP/Contents/MacOS/$EXE_NAME" \
     -framework Cocoa
 
-# アイコン素材
+# アイコン素材（PDF はベクター版フォールバック、PNG があればメニューバーではそちらを優先）
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/"
 cp "$ROOT/Resources/MenuBarIcon.pdf" "$APP/Contents/Resources/"
+if [ -f "$ROOT/Resources/MenuBarIcon.png" ]; then
+    cp "$ROOT/Resources/MenuBarIcon.png" "$APP/Contents/Resources/"
+fi
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>

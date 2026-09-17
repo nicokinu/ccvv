@@ -428,14 +428,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.autoenablesItems = false
         statusItem.menu = menu
 
-        // メニューバーアイコン（.bundle 内 MenuBarIcon.pdf = テンプレート画像）
-        // が見つからない場合のために絵文字フォールバックも用意しておく
+        // メニューバーアイコン（.bundle 内）。PNG（元画像からテンプレート化）を優先し、
+        // 無ければベクターの PDF、それも無ければ絵文字にフォールバック
         var menuBarIcon: NSImage?
-        if let url = Bundle.main.url(forResource: "MenuBarIcon", withExtension: "pdf"),
-           let img = NSImage(contentsOf: url) {
-            img.size = NSSize(width: 18, height: 18)
-            img.isTemplate = true
-            menuBarIcon = img
+        for ext in ["png", "pdf"] {
+            if let url = Bundle.main.url(forResource: "MenuBarIcon", withExtension: ext),
+               let img = NSImage(contentsOf: url) {
+                // メニューバーの高さいっぱい（22pt）まで使う。
+                // トリミング済み画像なのでアスペクト比は保つ
+                let side: CGFloat = 22
+                let longest = max(img.size.width, img.size.height)
+                if longest > 0 {
+                    img.size = NSSize(width: img.size.width * side / longest,
+                                      height: img.size.height * side / longest)
+                }
+                img.isTemplate = true
+                menuBarIcon = img
+                break
+            }
         }
 
         copyman.onTrustedChange = { [weak self] trusted in

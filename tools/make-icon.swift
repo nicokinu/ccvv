@@ -26,8 +26,8 @@ func drawArtwork(_ b: NSRect, template: Bool) {
     let textColor: NSColor = template ? .black : .white
 
     if template {
-        // メニューバー用: 黒の縁取り＋仕切り線（テンプレート画像）
-        path.lineWidth = s * 0.06
+        // メニューバー用: 黒の縁取り＋仕切り線＋ ⌘C / ⌘V（テンプレート画像）
+        path.lineWidth = s * 0.055
         lineColor.setStroke()
         path.stroke()
 
@@ -36,15 +36,16 @@ func drawArtwork(_ b: NSRect, template: Bool) {
         let div = NSBezierPath()
         div.move(to: NSPoint(x: body.minX, y: body.midY))
         div.line(to: NSPoint(x: body.maxX, y: body.midY))
-        div.lineWidth = s * 0.06
+        div.lineWidth = s * 0.045
         lineColor.setStroke()
         div.stroke()
         NSGraphicsContext.restoreGraphicsState()
 
-        drawText("CC", in: NSRect(x: body.minX, y: body.midY, width: body.width, height: body.height / 2),
-                 fontSize: s * 0.26, color: textColor)
-        drawText("VV", in: NSRect(x: body.minX, y: body.minY, width: body.width, height: body.height / 2),
-                 fontSize: s * 0.26, color: textColor)
+        // ⌘ と文字の間を詰めて表示
+        drawText("\u{2318}C", in: NSRect(x: body.minX, y: body.midY, width: body.width, height: body.height / 2),
+                 fontSize: s * 0.30, color: textColor, tight: true)
+        drawText("\u{2318}V", in: NSRect(x: body.minX, y: body.minY, width: body.width, height: body.height / 2),
+                 fontSize: s * 0.30, color: textColor, tight: true)
     } else {
         // アプリアイコン: 青系グラデーション＋斜光のつや
         let gradient = NSGradient(colors: [
@@ -81,15 +82,19 @@ func drawArtwork(_ b: NSRect, template: Bool) {
     }
 }
 
-func drawText(_ str: String, in rect: NSRect, fontSize: CGFloat, color: NSColor) {
+func drawText(_ str: String, in rect: NSRect, fontSize: CGFloat, color: NSColor, tight: Bool = false) {
     let font = NSFont.systemFont(ofSize: fontSize, weight: .bold)
     let para = NSMutableParagraphStyle()
     para.alignment = .center
-    let attrs: [NSAttributedString.Key: Any] = [
+    var attrs: [NSAttributedString.Key: Any] = [
         .font: font,
         .foregroundColor: color,
         .paragraphStyle: para,
     ]
+    if tight {
+        // 文字間を詰める（メニューバーの極小サイズ用）
+        attrs[.kern] = -fontSize * 0.12
+    }
     let attr = NSAttributedString(string: str, attributes: attrs)
     let textSize = attr.size()
     let y = rect.midY - textSize.height / 2
